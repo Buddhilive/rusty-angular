@@ -6,6 +6,16 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+pub fn greet(name: &str) -> String {
+    // alert(&format!("Hello, {}! Welcome to Rust with Angular.", name));
+    return format!("Hello, {}! Welcome to Rust with Angular.", name);
+}
+
+#[wasm_bindgen]
+pub fn add_numbers(x: i8, y: i8) -> i8 {
+    return adding(x, y);
+}
+
+fn adding(a: i8, b:i8) -> i8 {
+    return a + b;
 }
