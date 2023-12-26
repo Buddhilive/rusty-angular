@@ -9,8 +9,18 @@ import * as wasm from '../../../../pkg';
 export class AppComponent implements OnInit {
   title = 'ng-rusty';
 
+  numA = 5;
+  numB = 26;
+
+  answer = 0;
+
   ngOnInit(): void {
     this.title = wasm.greet('Buddhi');
-    console.log(wasm, wasm.add_numbers(8,2));
+    this.answer = wasm.add_numbers(this.numA, this.numB);
+    console.log(wasm);
+  }
+
+  addNumbers() {
+    this.answer = wasm.add_numbers(this.numA, this.numB);
   }
 }
