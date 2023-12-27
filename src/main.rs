@@ -12,10 +12,18 @@ pub fn greet(name: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn add_numbers(x: i8, y: i8) -> i8 {
-    return adding(x, y);
+pub fn calculate_numbers(x:i8, y:i8, action: &str) -> i8 {
+    match action {
+        "add" => return adding(x, y),
+        "substract" => return substract(x, y),
+        _ => return 0
+    }
 }
 
-fn adding(a: i8, b:i8) -> i8 {
+fn adding(a:i8, b:i8) -> i8 {
     return a + b;
+}
+
+fn substract(a:i8, b:i8) -> i8 {
+    return a - b;
 }
