@@ -1,8 +1,15 @@
 use wasm_bindgen::prelude::*;
 
+// For external functions from JS
 #[wasm_bindgen]
 extern "C" {
     fn alert(s: &str);
+}
+
+#[wasm_bindgen]
+pub fn main() {
+    // Your application's initialization logic goes here
+    println!("Hello from Rust!"); // Example output
 }
 
 #[wasm_bindgen]
