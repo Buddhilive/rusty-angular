@@ -10,6 +10,10 @@ export class DashboardComponent {
     {
       name: 'Basic Calculator',
       path: 'basic-calculator'
+    },
+    {
+      name: 'BMI Calculator',
+      path: 'bmi'
     }
   ];
 }

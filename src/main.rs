@@ -37,3 +37,8 @@ fn divide(a: i8, b: i8) -> i8 {
 fn multiply(a: i8, b: i8) -> i8 {
     return a * b;
 }
+
+#[wasm_bindgen]
+pub fn calculate_bmi(height: f32, weight: f32) -> f32 {
+    return weight / ((height / 100.0).powf(2.0));
+}
