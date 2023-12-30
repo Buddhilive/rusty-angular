@@ -20,9 +20,7 @@
             "outputPath": "dist/ng-rusty",
             "index": "projects/ng-rusty/src/index.html",
             "main": "projects/ng-rusty/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "projects/ng-rusty/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -30,7 +28,9 @@
               "projects/ng-rusty/src/assets"
             ],
             "styles": [
-              "projects/ng-rusty/src/styles.scss"
+              "projects/ng-rusty/src/styles.scss",
+              "node_modules/primeng/resources/themes/lara-light-blue/theme.css",
+              "node_modules/primeng/resources/primeng.min.css"
             ],
             "scripts": []
           },
@@ -82,19 +82,14 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/ng-rusty/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               "projects/ng-rusty/src/favicon.ico",
               "projects/ng-rusty/src/assets"
             ],
-            "styles": [
-              "projects/ng-rusty/src/styles.scss"
-            ],
+            "styles": ["projects/ng-rusty/src/styles.scss"],
             "scripts": []
           }
         }
