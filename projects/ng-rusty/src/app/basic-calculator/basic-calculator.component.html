@@ -1,9 +1,22 @@
-<h1>{{title}}</h1>
-<input type="number" name="" id="" [(ngModel)]="numA">
-<input type="number" name="" id="" [(ngModel)]="numB">
-<select name="" id="" [(ngModel)]="calcFn">
-    <option value="add">Add</option>
-    <option value="substract">Substract</option>
-</select>
-<button class="ngrust__btn" (click)="calculateNumbers()">{{calcFn}}</button>
-<p>Answer is {{answer}}</p>
+<div class="formgrid grid">
+  <div class="field col">
+    <p-inputNumber inputId="integeronly" [(ngModel)]="numA"></p-inputNumber>
+  </div>
+  <div class="field col">
+    <p-inputNumber inputId="integeronly" [(ngModel)]="numB"></p-inputNumber>
+  </div>
+  <div class="field col">
+    <p-dropdown
+      [options]="calculations"
+      [(ngModel)]="calcFn"
+      optionLabel="name"
+      optionValue="value"
+    ></p-dropdown>
+  </div>
+  <div class="field col">
+    <p-button (click)="calculateNumbers()" [label]="calcFn.toUpperCase()"></p-button>
+  </div>
+  <div class="field col">
+    <p>Answer is {{ answer }}</p>
+  </div>
+</div>

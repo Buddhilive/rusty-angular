@@ -7,9 +7,13 @@ import * as wasm from '../../../../../pkg';
   styleUrls: ['./basic-calculator.component.scss']
 })
 export class BasicCalculatorComponent {
-  title = 'ng-rusty';
-
-  calcFn: 'add' | 'substract' = 'add';
+  calcFn = 'add';
+  calculations = [
+    { name: 'Addition', value: 'add' },
+    { name: 'Substraction', value: 'substract' },
+    { name: 'Division', value: 'divide' },
+    { name: 'Multiplication', value: 'multiply' }
+  ];
 
   numA = 26;
   numB = 6;
@@ -17,7 +21,6 @@ export class BasicCalculatorComponent {
   answer = 0;
 
   ngOnInit(): void {
-    this.title = wasm.greet('Buddhi');
     this.answer = wasm.calculate_numbers(this.numA, this.numB, this.calcFn);
     console.log(wasm);
   }
