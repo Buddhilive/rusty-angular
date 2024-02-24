@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+mod vecdata;
 
 // For external functions from JS
 #[wasm_bindgen]

@@ -1,0 +1,3 @@
+struct VecData {
+    myarray: String,
+}
