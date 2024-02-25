@@ -21,8 +21,8 @@ export class BasicCalculatorComponent {
   answer = 0;
 
   ngOnInit(): void {
-    this.answer = wasm.calculate_numbers(this.numA, this.numB, this.calcFn);
-    console.log(wasm);
+    const test = wasm.vector_me(new Int32Array([1, 2, 3]));
+    console.log(test);
   }
 
   calculateNumbers() {

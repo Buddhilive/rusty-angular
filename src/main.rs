@@ -1,5 +1,7 @@
+use vecdata::DataFrame;
 use wasm_bindgen::prelude::*;
 mod vecdata;
+use std::any::Any;
 
 // For external functions from JS
 #[wasm_bindgen]
@@ -49,4 +51,12 @@ fn multiply(a: i8, b: i8) -> i8 {
 #[wasm_bindgen]
 pub fn calculate_bmi(height: f32, weight: f32) -> f32 {
     return weight / ((height / 100.0).powf(2.0));
+}
+
+#[wasm_bindgen]
+pub fn vector_me(myarr: Vec<dyn Any>) -> Vec<dyn Any> {
+    let data = myarr;
+    let df = vecdata::DataFrame::new(data);
+    // df.print(); // Output: "[1, 2, 3]"
+    return df.data;
 }
