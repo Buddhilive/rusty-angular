@@ -54,7 +54,7 @@ pub fn calculate_bmi(height: f32, weight: f32) -> f32 {
 }
 
 #[wasm_bindgen]
-pub fn vector_me(myarr: Vec<dyn Any>) -> Vec<dyn Any> {
+pub fn vector_me(myarr: Vec<i32>) -> Vec<i32> {
     let data = myarr;
     let df = vecdata::DataFrame::new(data);
     // df.print(); // Output: "[1, 2, 3]"

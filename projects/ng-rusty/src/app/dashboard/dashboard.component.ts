@@ -14,6 +14,10 @@ export class DashboardComponent {
     {
       name: 'BMI Calculator',
       path: 'bmi'
+    },
+    {
+      name: 'IndexedDB',
+      path: 'db'
     }
   ];
 }

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { BasicCalculatorComponent } from './basic-calculator/basic-calculator.component';
 import { BmiCalculatorComponent } from './bmi-calculator/bmi-calculator.component';
+import { IndexdbComponent } from './indexdb/indexdb.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'bmi',
     component: BmiCalculatorComponent
+  },
+  {
+    path: 'db',
+    component: IndexdbComponent
   }
 ];
 

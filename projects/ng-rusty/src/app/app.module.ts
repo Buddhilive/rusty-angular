@@ -15,13 +15,15 @@ import { TagModule } from 'primeng/tag';
 import { BasicCalculatorComponent } from './basic-calculator/basic-calculator.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { BmiCalculatorComponent } from './bmi-calculator/bmi-calculator.component';
+import { IndexdbComponent } from './indexdb/indexdb.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BasicCalculatorComponent,
     DashboardComponent,
-    BmiCalculatorComponent
+    BmiCalculatorComponent,
+    IndexdbComponent
   ],
   imports: [
     BrowserModule,
