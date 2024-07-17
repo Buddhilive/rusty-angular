@@ -3,7 +3,28 @@ import * as wasm from '../../../../../pkg';
 
 @Component({
   selector: 'app-basic-calculator',
-  templateUrl: './basic-calculator.component.html',
+  template: `<div class="formgrid grid">
+  <div class="field col">
+    <p-inputNumber inputId="integeronly" [(ngModel)]="numA"></p-inputNumber>
+  </div>
+  <div class="field col">
+    <p-inputNumber inputId="integeronly" [(ngModel)]="numB"></p-inputNumber>
+  </div>
+  <div class="field col">
+    <p-dropdown
+      [options]="calculations"
+      [(ngModel)]="calcFn"
+      optionLabel="name"
+      optionValue="value"
+    ></p-dropdown>
+  </div>
+  <div class="field col">
+    <p-button (click)="calculateNumbers()" [label]="calcFn.toUpperCase()"></p-button>
+  </div>
+  <div class="field col">
+    <p>Answer is {{ answer }}</p>
+  </div>
+</div>`,
   styleUrls: ['./basic-calculator.component.scss']
 })
 export class BasicCalculatorComponent {

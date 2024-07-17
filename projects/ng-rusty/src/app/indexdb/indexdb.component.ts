@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-indexdb',
-  templateUrl: './indexdb.component.html',
+  template: `<p>indexdb works!</p>`,
   styleUrls: ['./indexdb.component.scss']
 })
 export class IndexdbComponent implements OnInit {

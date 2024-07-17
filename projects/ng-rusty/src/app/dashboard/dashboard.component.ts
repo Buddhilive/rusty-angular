@@ -2,7 +2,14 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
+  template: `<div class="flex flex-row flex-wrap gap-4">
+  <p-card [header]="tool.name" class="flex-initial" *ngFor="let tool of tools">
+    <ng-template pTemplate="footer">
+        <p-button label="Open" icon="pi pi-chevron-right" [routerLink]="tool.path"></p-button>
+    </ng-template>
+  </p-card>
+</div>
+`,
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {

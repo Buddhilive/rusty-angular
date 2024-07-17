@@ -4,7 +4,33 @@ import * as wasm from '../../../../../pkg';
 
 @Component({
   selector: 'app-bmi-calculator',
-  templateUrl: './bmi-calculator.component.html',
+  template: `<form [formGroup]="bmiForm" (ngSubmit)="onSubmit()">
+  <div class="formgrid grid">
+    <div class="field col">
+      <p-inputNumber
+        inputId="integeronly"
+        formControlName="height"
+        suffix=" cm"
+      ></p-inputNumber>
+    </div>
+    <div class="field col">
+      <p-inputNumber
+        inputId="integeronly"
+        formControlName="weight"
+        suffix=" kg"
+      ></p-inputNumber>
+    </div>
+  </div>
+  <div class="flex gap-4">
+    <p-button
+      type="submit"
+      label="Calculate"
+      [disabled]="bmiForm.invalid"
+    ></p-button>
+
+    <p-tag [severity]="tagColor" [value]="bmi"></p-tag>
+  </div>
+</form>`,
   styleUrls: ['./bmi-calculator.component.scss']
 })
 export class BmiCalculatorComponent {
