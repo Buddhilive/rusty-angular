@@ -91,6 +91,7 @@ export class NpmInstaller {
 
     // Ensure /node_modules exists
     await this.fs.mkdir('/node_modules', { recursive: true });
+    await this.ensureScopedParentDir(packageName);
     const targetDir = `/node_modules/${packageName}`;
     await this.fs.mkdir(targetDir, { recursive: true });
 
@@ -159,6 +160,13 @@ export class NpmInstaller {
     // 7. Check for native toolchain requirement (P4 / US4)
     if (hasBindingGyp && options.onToolchainNeeded) {
       options.onToolchainNeeded(packageName);
+    }
+  }
+
+  private async ensureScopedParentDir(packageName: string): Promise<void> {
+    if (packageName.startsWith('@') && packageName.includes('/')) {
+      const scope = packageName.split('/')[0];
+      await this.fs.mkdir(`/node_modules/${scope}`, { recursive: true });
     }
   }
 }

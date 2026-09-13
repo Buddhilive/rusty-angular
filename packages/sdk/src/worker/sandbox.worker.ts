@@ -242,6 +242,16 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
         ensureDir('/node_modules');
         ensureDir('/tmp');
 
+        if (options?.stackPreset === 'next-stack') {
+          ensureDir('/workspace/db');
+          ensureDir('/workspace/store');
+          ensureDir('/workspace/app');
+          ensureDir('/workspace/app/api');
+          ensureDir('/workspace/components');
+          ensureDir('/workspace/components/ui');
+          ensureDir('/workspace/lib');
+        }
+
         self.postMessage({ type: 'ready' } as WorkerOutboundMessage);
         break;
       }
@@ -521,6 +531,9 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
                   NODE_ENV: 'development',
                   PATH: '/node_modules/.bin',
                   NEXT_TELEMETRY_DISABLED: '1',
+                  ...(options?.stackPreset === 'next-stack'
+                    ? { DATABASE_URL: 'file:/workspace/sqlite.db' }
+                    : {}),
                   ...(msg.env || {}),
                 },
                 nextTick: (cb: Function, ...args: any[]) => setTimeout(() => cb(...args), 0),
@@ -771,12 +784,38 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
                 if (mod.startsWith('.') || mod.startsWith('/')) {
                   candidates.push(mod);
                   candidates.push(`${mod}.js`);
+                  candidates.push(`${mod}.cjs`);
+                  candidates.push(`${mod}.mjs`);
                   candidates.push(`${mod}.json`);
                   candidates.push(`${mod}/index.js`);
+                  candidates.push(`${mod}/index.cjs`);
+                  candidates.push(`${mod}/index.mjs`);
+                  candidates.push(`${mod}/package.json`);
                 } else {
                   candidates.push(`/node_modules/${mod}/index.js`);
                   candidates.push(`/node_modules/${mod}.js`);
+                  candidates.push(`/node_modules/${mod}.cjs`);
+                  candidates.push(`/node_modules/${mod}.mjs`);
+                  candidates.push(`/node_modules/${mod}.json`);
                   candidates.push(`/node_modules/${mod}/package.json`);
+
+                  // Subpath support for bare packages and scoped packages
+                  let pkgName = mod;
+                  let subpath = '.';
+                  if (mod.startsWith('@')) {
+                    const parts = mod.split('/');
+                    if (parts.length > 2) {
+                      pkgName = `${parts[0]}/${parts[1]}`;
+                      subpath = `./${parts.slice(2).join('/')}`;
+                    }
+                  } else if (mod.includes('/')) {
+                    const parts = mod.split('/');
+                    pkgName = parts[0];
+                    subpath = `./${parts.slice(1).join('/')}`;
+                  }
+                  if (subpath !== '.') {
+                    candidates.push(`/node_modules/${pkgName}/package.json`);
+                  }
                 }
 
                 let targetFile: string | null = null;
@@ -797,14 +836,91 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
                   throw new Error(`Cannot find module '${mod}'`);
                 }
 
-                // If package.json, find entrypoint
+                // If package.json, find entrypoint with exports map support
                 if (targetFile.endsWith('package.json')) {
                   try {
                     const pkgJson = JSON.parse(new TextDecoder().decode(fileData));
-                    const mainEntry = pkgJson.main || pkgJson.module || 'index.js';
-                    const resolvedMain = virtualPath.join(virtualPath.dirname(targetFile), mainEntry);
+                    const pkgDir = virtualPath.dirname(targetFile);
+
+                    // Determine requested subpath
+                    let subpath = '.';
+                    if (!mod.startsWith('.') && !mod.startsWith('/')) {
+                      if (mod.startsWith('@')) {
+                        const parts = mod.split('/');
+                        if (parts.length > 2) {
+                          subpath = `./${parts.slice(2).join('/')}`;
+                        }
+                      } else if (mod.includes('/')) {
+                        const parts = mod.split('/');
+                        if (parts.length > 1) {
+                          subpath = `./${parts.slice(1).join('/')}`;
+                        }
+                      }
+                    }
+
+                    const resolveExportTarget = (exportVal: any): string | null => {
+                      if (typeof exportVal === 'string') return exportVal;
+                      if (!exportVal || typeof exportVal !== 'object') return null;
+                      if (exportVal.require) return resolveExportTarget(exportVal.require);
+                      if (exportVal.default) return resolveExportTarget(exportVal.default);
+                      if (exportVal.import) return resolveExportTarget(exportVal.import);
+                      if (exportVal.node) return resolveExportTarget(exportVal.node);
+                      if (Array.isArray(exportVal)) {
+                        for (const item of exportVal) {
+                          const res = resolveExportTarget(item);
+                          if (res) return res;
+                        }
+                      }
+                      return null;
+                    };
+
+                    let resolvedEntry: string | null = null;
+                    if (pkgJson.exports) {
+                      if (subpath === '.') {
+                        if (
+                          typeof pkgJson.exports === 'string' ||
+                          (pkgJson.exports &&
+                            !pkgJson.exports['.'] &&
+                            (pkgJson.exports.require || pkgJson.exports.default || pkgJson.exports.import))
+                        ) {
+                          resolvedEntry = resolveExportTarget(pkgJson.exports);
+                        } else if (pkgJson.exports['.']) {
+                          resolvedEntry = resolveExportTarget(pkgJson.exports['.']);
+                        }
+                      } else {
+                        if (pkgJson.exports[subpath]) {
+                          resolvedEntry = resolveExportTarget(pkgJson.exports[subpath]);
+                        } else if (pkgJson.exports[`${subpath}.js`]) {
+                          resolvedEntry = resolveExportTarget(pkgJson.exports[`${subpath}.js`]);
+                        } else {
+                          for (const [key, val] of Object.entries(pkgJson.exports)) {
+                            if (key.endsWith('/*') && subpath.startsWith(key.slice(0, -1))) {
+                              const patternTarget = resolveExportTarget(val);
+                              if (patternTarget && patternTarget.endsWith('/*')) {
+                                const remainder = subpath.slice(key.length - 2);
+                                resolvedEntry = patternTarget.slice(0, -1) + remainder;
+                                break;
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+
+                    if (!resolvedEntry) {
+                      if (subpath === '.') {
+                        resolvedEntry = pkgJson.main || pkgJson.module || 'index.js';
+                      } else {
+                        resolvedEntry = subpath;
+                      }
+                    }
+
+                    const resolvedMain = virtualPath.join(pkgDir, resolvedEntry || 'index.js');
                     return virtualRequire(resolvedMain);
-                  } catch (e) {
+                  } catch (e: any) {
+                    if (e && e.message && !e.message.startsWith('Failed to parse')) {
+                      throw e;
+                    }
                     throw new Error(`Failed to parse package.json for module '${mod}'`);
                   }
                 }
@@ -815,6 +931,14 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
                   moduleCache.set(mod, parsed);
                   return parsed;
                 }
+
+                const currentDir = virtualPath.dirname(targetFile);
+                const scopedRequire = (childMod: string) => {
+                  if (childMod.startsWith('.')) {
+                    return virtualRequire(virtualPath.join(currentDir, childMod));
+                  }
+                  return virtualRequire(childMod);
+                };
 
                 const fn = new Function(
                   'require',
@@ -829,7 +953,7 @@ self.onmessage = async (event: MessageEvent<WorkerInboundMessage>) => {
                 moduleCache.set(mod, modObj.exports);
 
                 try {
-                  fn(virtualRequire, modObj, modObj.exports, virtualProcess, virtualConsole, Buffer);
+                  fn(scopedRequire, modObj, modObj.exports, virtualProcess, virtualConsole, Buffer);
                   moduleCache.set(mod, modObj.exports);
                   return modObj.exports;
                 } catch (err: any) {

@@ -56,6 +56,8 @@ export async function bridgeRequest(
         }
       }, 15000);
 
+      let isSSE = false;
+
       channel.port1.onmessage = (event) => {
         clearTimeout(timeout);
         const data = event.data;
@@ -66,6 +68,9 @@ export async function bridgeRequest(
           if (data.headers) {
             for (const [k, v] of Object.entries(data.headers)) {
               initialHeaders.set(k, String(v));
+              if (k.toLowerCase() === 'content-type' && String(v).includes('text/event-stream')) {
+                isSSE = true;
+              }
             }
           }
           return;
@@ -78,6 +83,12 @@ export async function bridgeRequest(
               start(c) {
                 streamController = c;
                 c.enqueue(new Uint8Array(data.data));
+              },
+              cancel() {
+                try {
+                  channel.port1.postMessage({ type: 'abort' });
+                  channel.port1.close();
+                } catch (_) {}
               },
             });
             resolve(
@@ -93,12 +104,23 @@ export async function bridgeRequest(
           return;
         }
 
+        if (data.type === 'close') {
+          if (streamController) {
+            try {
+              streamController.close();
+            } catch (_) {}
+          }
+          return;
+        }
+
         if (data.type === 'end' || !data.type) {
           if (streamController) {
             if (data.body && data.body.byteLength > 0) {
               streamController.enqueue(new Uint8Array(data.body));
             }
-            streamController.close();
+            if (!isSSE) {
+              streamController.close();
+            }
           } else if (!responseResolved) {
             responseResolved = true;
             if (data.headers) {

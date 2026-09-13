@@ -75,22 +75,85 @@ export function interceptRequire(moduleName: string): any | null {
   }
 
   // 2. Check for better-sqlite3 or sqlite native bindings
-  if (moduleName === 'better-sqlite3' || moduleName.endsWith('better_sqlite3.node')) {
+  if (
+    moduleName === 'better-sqlite3' ||
+    moduleName === 'sqlite3' ||
+    moduleName.endsWith('better_sqlite3.node')
+  ) {
     const custom = addonRegistry.get('better-sqlite3');
     if (custom) return custom();
-    // In-memory fallback
-    return class Database {
-      constructor(filename: string, options?: any) {}
+
+    console.warn(
+      '[Sandbox] Native SQLite (better-sqlite3) intercepted. Using in-memory fallback. For full persistent SQLite support, use @libsql/client in WASM mode.'
+    );
+
+    const DatabaseClass: any = class Database {
+      private memoryStore = new Map<string, any[]>();
+      public open = true;
+      public filename: string;
+
+      constructor(filename: string, options?: any) {
+        this.filename = filename || ':memory:';
+      }
+
       prepare(sql: string) {
+        const cleanSql = sql.trim();
+        const self = this;
         return {
-          run: (...params: any[]) => ({ changes: 1, lastInsertRowid: 1 }),
-          get: (...params: any[]) => ({ id: 1, status: 'ok' }),
-          all: (...params: any[]) => [],
+          run: (...params: any[]) => {
+            const tableMatch = cleanSql.match(/into\s+([a-zA-Z0-9_]+)/i);
+            const tableName = tableMatch ? tableMatch[1].toLowerCase() : 'default';
+            if (!self.memoryStore.has(tableName)) {
+              self.memoryStore.set(tableName, []);
+            }
+            const rows = self.memoryStore.get(tableName)!;
+            const newId = rows.length + 1;
+            rows.push({ id: newId, params, created_at: Date.now() });
+            return { changes: 1, lastInsertRowid: newId };
+          },
+          get: (...params: any[]) => {
+            const tableMatch = cleanSql.match(/from\s+([a-zA-Z0-9_]+)/i);
+            const tableName = tableMatch ? tableMatch[1].toLowerCase() : 'default';
+            const rows = self.memoryStore.get(tableName) || [];
+            return rows[0] || { id: 1, status: 'ok' };
+          },
+          all: (...params: any[]) => {
+            const tableMatch = cleanSql.match(/from\s+([a-zA-Z0-9_]+)/i);
+            const tableName = tableMatch ? tableMatch[1].toLowerCase() : 'default';
+            return self.memoryStore.get(tableName) || [];
+          },
+          iterate: function* (...params: any[]) {
+            const tableMatch = cleanSql.match(/from\s+([a-zA-Z0-9_]+)/i);
+            const tableName = tableMatch ? tableMatch[1].toLowerCase() : 'default';
+            const rows = self.memoryStore.get(tableName) || [];
+            for (const row of rows) yield row;
+          },
         };
       }
-      exec(sql: string) {}
-      close() {}
+
+      exec(sql: string) {
+        return this;
+      }
+
+      pragma(pragmaStr: string) {
+        return [];
+      }
+
+      transaction(fn: (...args: any[]) => any) {
+        return (...args: any[]) => fn(...args);
+      }
+
+      close() {
+        this.open = false;
+      }
     };
+
+    const factory: any = function (filename: string, opts?: any) {
+      return new DatabaseClass(filename, opts);
+    };
+    factory.Database = DatabaseClass;
+    Object.setPrototypeOf(factory, DatabaseClass);
+    return factory;
   }
 
   // 3. Check registered patterns

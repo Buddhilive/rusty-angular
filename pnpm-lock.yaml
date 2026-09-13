@@ -33,13 +33,13 @@ importers:
 
   packages/sdk:
     dependencies:
+      '@buddhilive/sandbox-toolchain':
+        specifier: workspace:*
+        version: link:../toolchain-bundle
       fflate:
         specifier: ^0.8.2
         version: 0.8.3
     devDependencies:
-      '@buddhilive/sandbox-toolchain':
-        specifier: workspace:*
-        version: link:../toolchain-bundle
       '@playwright/test':
         specifier: ^1.44.0
         version: 1.63.0
@@ -72,6 +72,13 @@ importers:
         version: 3.9.1(rollup@4.63.1)(typescript@5.9.3)(vite@5.4.21)
 
   packages/toolchain-bundle:
+    dependencies:
+      esbuild-wasm:
+        specifier: ^0.21.3
+        version: 0.21.5
+      wa-sqlite:
+        specifier: ^1.0.0
+        version: 1.0.0
     devDependencies:
       typescript:
         specifier: ^5.4.5
@@ -580,6 +587,11 @@ packages:
     resolution: {integrity: sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==}
     engines: {node: '>= 0.4'}
 
+  esbuild-wasm@0.21.5:
+    resolution: {integrity: sha512-L/FlOPMMFtw+6qPAbuPvJXdrOYOp9yx/PEwSrIZW0qghY4vgV003evdYDwqQ/9ENMQI0B6RMod9xT4FHtto6OQ==}
+    engines: {node: '>=12'}
+    hasBin: true
+
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
     engines: {node: '>=12'}
@@ -991,6 +1003,9 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '*'
+
+  wa-sqlite@1.0.0:
+    resolution: {integrity: sha512-Kyybo5/BaJp76z7gDWGk2J6Hthl4NIPsE+swgraEjy3IY6r5zIR02wAs1OJH4XtJp1y3puj3Onp5eMGS0z7nUA==}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -1413,6 +1428,8 @@ snapshots:
 
   es-errors@1.3.0: {}
 
+  esbuild-wasm@0.21.5: {}
+
   esbuild@0.21.5:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.21.5
@@ -1812,6 +1829,8 @@ snapshots:
       '@vue/language-core': 1.8.27(typescript@5.9.3)
       semver: 7.8.5
       typescript: 5.9.3
+
+  wa-sqlite@1.0.0: {}
 
   which@2.0.2:
     dependencies:

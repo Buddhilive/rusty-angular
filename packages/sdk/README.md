@@ -105,6 +105,44 @@ await sandbox.process.spawn('node', ['/workspace/server.js']);
 
 ---
 
+## Opinionated Next.js Stack (`next-stack` Preset)
+
+The SDK provides first-class, out-of-the-box support for a batteries-included, zero-server Next.js stack:
+
+| Layer | Canonical Package | Verified Version |
+|---|---|---|
+| **Styling** | `tailwindcss`, `@tailwindcss/postcss` | `^4.0.0` |
+| **Components** | `shadcn` primitives, `lucide-react` | `^1.16.0` |
+| **AI Elements** | `ai-elements` | `^0.1.0` |
+| **State** | `zustand` | `^5.0.0` |
+| **Database & ORM** | `drizzle-orm`, `@libsql/client` (WASM) | `^0.38.0` / `^0.14.0` |
+| **Authentication** | `better-auth` | `^1.1.0` |
+| **Generative AI** | `ai` (Vercel AI SDK), `@ai-sdk/openai` | `^6.0.0` / `^1.1.0` |
+
+### Initializing with `stackPreset`
+
+```typescript
+import { Sandbox, scaffoldNextStackApp } from '@buddhilive/sandbox';
+
+// 1. Create sandbox with next-stack preset
+const sandbox = await Sandbox.create({
+  stackPreset: 'next-stack',
+  maxMemoryMb: 1024,
+});
+
+// 2. Scaffold all 16 canonical config and starter files
+await scaffoldNextStackApp(sandbox, {
+  appName: 'my-app',
+  withAuth: true,
+  withAI: true,
+});
+
+// Or via the Sandbox instance helper
+await sandbox.scaffoldNextStackApp();
+```
+
+---
+
 ## License
 
 MIT © BuddhiLive

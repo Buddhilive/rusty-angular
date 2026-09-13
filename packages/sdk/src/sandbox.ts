@@ -3,6 +3,7 @@ import { FsNamespace } from './fs-namespace.js';
 import { ProcessNamespace } from './process-namespace.js';
 import { PortsNamespace } from './ports-namespace.js';
 import { SandboxOptions, SandboxError, WorkerOutboundMessage } from './types.js';
+import { scaffoldNextStackApp, type ScaffoldNextStackOptions } from './scaffold-next-stack.js';
 
 // @ts-ignore
 import InlineSandboxWorker from './worker/sandbox.worker.ts?worker&inline';
@@ -68,6 +69,10 @@ export class Sandbox {
     await initPromise;
 
     return new Sandbox(bridge);
+  }
+
+  public async scaffoldNextStackApp(options?: ScaffoldNextStackOptions): Promise<void> {
+    return scaffoldNextStackApp(this, options);
   }
 
   public async dispose(): Promise<void> {
